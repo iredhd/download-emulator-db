@@ -3,22 +3,31 @@ urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
 if [ -z "$1" ]
   then
     echo
-    echo 'Please enter the path of the folder you wish to export from the emulator. For example: ExperienceData/%2540anonymous%252Fevmd-sfa-app-v1-s5-2a861808-5400-4a44-be6b-52b5bbcb4fb8/SQLite/'
+    echo 'Please enter the package of the application you wish to export from the emulator. For example: host.exp.exponent'
     exit 1
 fi
 if [ -z "$2" ]
   then
     echo
-    echo 'Please enter the path where files will be extracted from the selected folder.. For example: /home/Everymind/SFA/'
+    echo 'Please enter the path of the folder you wish to export from the emulator. For example: ExperienceData/%2540anonymous%252F/SQLite/'
+    exit 1
+fi
+if [ -z "$3" ]
+  then
+    echo
+    echo 'Please enter the path where files will be extracted from the selected folder.. For example: /home/SQLite/'
     exit 1
 fi
 
-directoryToExport="apps/host.exp.exponent/f/$(urldecode "$1")*"
+actualDate=$(date +"%d%m%Y_%H%M%S")
+
+directoryToExport="apps/${1}/f/$(urldecode "$2")*"
+destinationDirectory="$3$actualDate"
 
 echo 
 echo 'Downloading Android Emulator Backup...'
 echo 'Now unlock your device and confirm the backup operation...'
-adb backup -noapk host.exp.exponent > /dev/null
+adb backup -noapk ${1} > /dev/null
 echo
 
 echo 'Decompressing Android Emulator Backup...'
@@ -27,11 +36,12 @@ echo
 
 echo
 echo 'Moving the backup do destination directory...'
-mv ${directoryToExport} $2
-echo
+mkdir ${destinationDirectory}
+mv $directoryToExport "${destinationDirectory}/"
+echo 
 
 echo 'Deleting the backup files...'
 rm -rf apps/ && rm -rf backup.ab
 echo
 
-echo "Finished! -> $2"
+echo "Finished! -> $destinationDirectory"
