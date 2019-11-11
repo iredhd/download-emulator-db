@@ -1,0 +1,37 @@
+#!/bin/bash
+urldecode() { : "${*//+/ }"; echo -e "${_//%/\\x}"; }
+if [ -z "$1" ]
+  then
+    echo
+    echo 'Please enter the path of the folder you wish to export from the emulator. For example: ExperienceData/%2540anonymous%252Fevmd-sfa-app-v1-s5-2a861808-5400-4a44-be6b-52b5bbcb4fb8/SQLite/'
+    exit 1
+fi
+if [ -z "$2" ]
+  then
+    echo
+    echo 'Please enter the path where files will be extracted from the selected folder.. For example: /home/Everymind/SFA/'
+    exit 1
+fi
+
+directoryToExport="apps/host.exp.exponent/f/$(urldecode "$1")*"
+
+echo 
+echo 'Downloading Android Emulator Backup...'
+echo 'Now unlock your device and confirm the backup operation...'
+adb backup -noapk host.exp.exponent > /dev/null
+echo
+
+echo 'Decompressing Android Emulator Backup...'
+dd if=backup.ab bs=1 skip=24 | python -c "import zlib,sys;sys.stdout.write(zlib.decompress(sys.stdin.read()))" | tar -xf -
+echo 
+
+echo
+echo 'Moving the backup do destination directory...'
+mv ${directoryToExport} $2
+echo
+
+echo 'Deleting the backup files...'
+rm -rf apps/ && rm -rf backup.ab
+echo
+
+echo "Finished! -> $2"
